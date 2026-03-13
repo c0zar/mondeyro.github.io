@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<head>
+    <meta charset="UTF-8">
+    <title>MONDEYRO | Cart</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<body>
+    <header>
+        <nav>
+            <div class="menu">
+                <a href="index.html">Main</a> <a href="main.html">Catalog</a>
+                <a href="login.html">Account</a>
+                <a href="contact.html">Contact</a> </div>
+            </div>
+            <h1 class="logo">MONDEYRO</h1>
+            <div class="cart"><a href="panier.html">Cart <span id="cart-count">0</span></a></div>
+        </nav>
+    </header>
+
+    <main style="padding: 50px 10%; min-height: 60vh;">
+        <h2 class="section-title">YOUR CART</h2>
+        <div id="cart-content"></div>
+        <div id="cart-total" style="text-align:right; margin-top:30px; font-size:24px; font-weight:bold;"></div>
+        <button class="btn-add" style="float:right; margin-top:20px;">CHECKOUT</button>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>Contact: mondeyroos@gmail.com</p>
+                <p>Instagram: @mondeyro.shop</p>
+                <p>© 2026 MONDEYRO</p>
+            </div>
+            <div class="logo" style="font-size: 18px;">MONDEYRO</div>
+        </div>
+    </footer>
+
+    <script>
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
+
+async function passerCommande() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        alert("Veuillez vous connecter pour commander.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+    const total = cart.reduce((a, b) => a + (b.prix * b.quantite), 0);
+
+    const { error } = await supabase.from('commandes').insert({
+        user_id: user.id,
+        total: total,
+        items: cart
+    });
+
+    if (!error) {
+        alert("Commande validée !");
+        localStorage.removeItem('mondeyro_cart'); 
+        window.location.href = "index.html";
+    } else {
+        alert("Erreur : " + error.message);
+    }
+}
+        function displayCart() {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            const container = document.getElementById('cart-content');
+            const totalContainer = document.getElementById('cart-total');
+            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantite, 0);
+
+            if (cart.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Your cart is empty.</p>";
+                totalContainer.innerHTML = "";
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                total += (item.prix * item.quantite);
+                return `
+                <div class="cart-item">
+                    <img src="${item.image}" style="width:100px; margin-right:20px;">
+                    <div style="flex:1;">
+                        <h3 style="text-transform:uppercase;">${item.nom}</h3>
+                        <p style="color:#666; font-size:12px;">Size: ${item.taille} | Color: ${item.couleur}</p>
+                        <p style="font-weight:bold; margin-top:5px;">${item.prix}$</p>
+                        <div style="display:flex; align-items:center; margin-top:10px; gap:15px;">
+                            <button onclick="updateQty(${index}, -1)" class="qty-btn">-</button>
+                            <span>${item.quantite}</span>
+                            <button onclick="updateQty(${index}, 1)" class="qty-btn">+</button>
+                        </div>
+                    </div>
+                    <button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size:10px; letter-spacing:1px;">REMOVE</button>
+                </div>`;
+            }).join('');
+            totalContainer.innerText = "Total: " + total.toFixed(2) + "$";
+        }
+
+        window.updateQty = (i, change) => {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            cart[i].quantite += change;
+            if (cart[i].quantite <= 0) cart.splice(i, 1);
+            localStorage.setItem('mondeyro_cart', JSON.stringify(cart));
+            displayCart();
+        };
+
+        window.removeItem = (i) => {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            cart.splice(i, 1);
+            localStorage.setItem('mondeyro_cart', JSON.stringify(cart));
+            displayCart();
+        };
+
+        displayCart();
+    </script>
+</body>
+</html>

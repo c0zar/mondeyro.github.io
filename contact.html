@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>MONDEYRO | Contact</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .contact-box {
+            border: 10px solid #000;
+            padding: 80px 40px;
+            max-width: 900px;
+            margin: 60px auto;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .contact-info-block {
+            margin-bottom: 40px;
+        }
+
+        .contact-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .contact-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            text-decoration: none;
+            display: block;
+        }
+
+        .contact-main-title {
+            text-align: center;
+            font-size: 28px;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            margin-top: 50px;
+            color: #666;
+        }
+    </style>
+</head>
+<body style="background-color: #ccc;"> <header>
+        <nav>
+            <div class="menu">
+                <a href="index.html">Main</a> <a href="main.html">Catalog</a>
+                <a href="login.html">Account</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <h1 class="logo">MONDEYRO</h1>
+            <div class="cart"><a href="panier.html">Cart <span id="cart-count">0</span></a></div>
+        </nav>
+    </header>
+
+    <h2 class="contact-main-title">CONTACT</h2>
+
+    <main>
+        <div class="contact-box">
+            <div class="contact-info-block">
+                <p class="contact-label">Email us</p>
+                <a href="mailto:mondeyroos@gmail.com" class="contact-value">mondeyroos@gmail.com</a>
+            </div>
+
+            <div class="contact-info-block">
+                <p class="contact-label">WhatsApp</p>
+                <p class="contact-value">+33 7 83 15 98 73</p>
+            </div>
+
+            <div class="contact-info-block">
+                <p class="contact-label">Instagram</p>
+                <a href="https://instagram.com/mondeyro.shop" target="_blank" class="contact-value">@mondeyro.shop</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>Contact: mondeyroos@gmail.com</p>
+                <p>Instagram: @mondeyro.shop</p>
+                <p>© 2026 MONDEYRO</p>
+            </div>
+            <div class="logo" style="font-size: 18px;">MONDEYRO</div>
+        </div>
+    </footer>
+
+    <script>
+        function updateCartCount() {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            const count = cart.reduce((a, b) => a + b.quantite, 0);
+            document.getElementById('cart-count').innerText = count;
+        }
+        
+        window.onload = updateCartCount;
+    </script>
+</body>
+</html>

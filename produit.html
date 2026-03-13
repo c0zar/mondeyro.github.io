@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>MONDEYRO | Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<body>
+    <header>
+        <nav>
+            <a href="index.html">Main</a> <div class="menu"><a href="main.html">Catalog</a><a href="login.html">Account</a> </div>
+            <h1 class="logo">MONDEYRO</h1>
+            <div class="cart" id="cart-logo"><a href="panier.html">Cart <span id="cart-count">0</span></a></div>
+        </nav>
+    </header>
+
+    <main id="product-details"></main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>Contact: mondeyroos@gmail.com</p>
+                <p>Instagram: @mondeyro.shop</p>
+                <p>© 2026 MONDEYRO</p>
+            </div>
+            <div class="logo" style="font-size: 18px;">MONDEYRO</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://yaspyppzhiegsjxgmzik.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhc3B5cHB6aGllZ3NqeGdtemlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzc0MjcsImV4cCI6MjA4MzgxMzQyN30.p_owcqxOKPqTo9GVB7zgZhpd7ZXx9YW8AY797Edxgf8';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const productId = new URLSearchParams(window.location.search).get('id');
+        let selectedSize = null, selectedColor = null;
+
+        window.selectSize = (size, el) => {
+            selectedSize = size;
+            document.querySelectorAll('.sizes span').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+        };
+
+        window.changeImage = (src, color, el) => {
+            selectedColor = color;
+            document.getElementById('main-product-img').src = src;
+            document.querySelectorAll('.circle').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        };
+
+        window.addToCart = (nom, prix) => {
+            if (!selectedSize || !selectedColor) { alert("Please select a size and color"); return; }
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            const existing = cart.find(i => i.nom === nom && i.taille === selectedSize && i.couleur === selectedColor);
+            if (existing) existing.quantite += 1;
+            else cart.push({ nom, prix: parseFloat(prix), taille: selectedSize, couleur: selectedColor, image: document.getElementById('main-product-img').src, quantite: 1 });
+            localStorage.setItem('mondeyro_cart', JSON.stringify(cart));
+            updateCartCount();
+            const logo = document.getElementById('cart-logo');
+            logo.classList.remove('blink-animation'); void logo.offsetWidth; logo.classList.add('blink-animation');
+        };
+
+        function updateCartCount() {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantite, 0);
+        }
+
+        async function loadProduct() {
+            const { data: p } = await supabaseClient.from('produits').select('*').eq('id', productId).single();
+            if (!p) return;
+            const sizes = p.tailles ? p.tailles.split(',') : [];
+            let colorsHtml = p.couleurs ? p.couleurs.split(',').map(e => {
+                const parts = e.split(':');
+                return `<div class="circle" style="background-color: ${parts[0].trim()};" onclick="changeImage('${parts.slice(1).join(':').trim()}', '${parts[0].trim()}', this)"></div>`;
+            }).join('') : "";
+
+            document.getElementById('product-details').innerHTML = `
+                <div class="product-layout">
+                    <div class="product-img"><img id="main-product-img" src="${p.image_url}"></div>
+                    <div class="product-info">
+                        <h1>${p.nom}</h1><p class="price">${p.prix}$</p>
+                        <p class="label">Size</p><div class="sizes">${sizes.map(s => `<span onclick="selectSize('${s.trim()}', this)">${s.trim()}</span>`).join('')}</div>
+                        <p class="label">Color</p><div class="colors">${colorsHtml}</div>
+                        <button class="btn-add" onclick="addToCart('${p.nom}', '${p.prix}')">ADD TO CART</button>
+                    </div>
+                </div>`;
+            updateCartCount();
+        }
+        loadProduct();
+    </script>
+</body>
+</html>

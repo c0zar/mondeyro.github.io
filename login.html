@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONDEYRO | Account</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="menu">
+                <a href="index.html">Main</a> <a href="main.html">Catalog</a>
+                <a href="login.html">Account</a>
+                <a href="contact.html">Contact</a> </div>
+            </div>
+            <h1 class="logo">MONDEYRO</h1>
+            <div class="cart"><a href="panier.html">Cart <span id="cart-count">0</span></a></div>
+        </nav>
+    </header>
+
+    <main id="main-content" style="max-width: 400px; margin: 100px auto; text-align: center; padding: 0 20px;">
+        <div id="auth-container">
+            <h2 id="auth-title" style="margin-bottom: 20px; letter-spacing: 5px;">LOGIN</h2>
+
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="email" id="email" placeholder="Email" style="padding: 15px; border: 1px solid #000;">
+                <input type="password" id="password" placeholder="Password" style="padding: 15px; border: 1px solid #000;">
+                
+                <button id="auth-btn" class="btn-add">SIGN IN</button>
+                
+                <p id="toggle-text" style="cursor: pointer; text-decoration: underline; font-size: 11px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                    NEW HERE? CREATE AN ACCOUNT
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>Contact: mondeyroos@gmail.com</p>
+                <p>Instagram: @mondeyro</p>
+                <p>© 2026 MONDEYRO</p>
+            </div>
+            <div class="logo" style="font-size: 18px;">MONDEYRO</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const SUPABASE_URL = 'https://yaspyppzhiegsjxgmzik.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhc3B5cHB6aGllZ3NqeGdtemlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzc0MjcsImV4cCI6MjA4MzgxMzQyN30.p_owcqxOKPqTo9GVB7zgZhpd7ZXx9YW8AY797Edxgf8';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let isLoginMode = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const title = document.getElementById('auth-title');
+            const btn = document.getElementById('auth-btn');
+            const toggleLink = document.getElementById('toggle-text');
+
+            if (toggleLink) {
+                toggleLink.addEventListener('click', () => {
+                    isLoginMode = !isLoginMode;
+                    
+                    if (isLoginMode) {
+                        title.innerText = "LOGIN";
+                        btn.innerText = "SIGN IN";
+                        toggleLink.innerText = "NEW HERE? CREATE AN ACCOUNT";
+                    } else {
+                        title.innerText = "REGISTER";
+                        btn.innerText = "CREATE ACCOUNT";
+                        toggleLink.innerText = "ALREADY HAVE AN ACCOUNT? SIGN IN";
+                    }
+                });
+            }
+
+            if (btn) {
+                btn.addEventListener('click', async () => {
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+
+                    if (!email || !password) {
+                        alert("Please fill in all fields");
+                        return;
+                    }
+
+                    if (isLoginMode) {
+                        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                        if (error) alert(error.message); 
+                        else window.location.href = "index.html";
+                    } else {
+                        const { data, error } = await supabase.auth.signUp({ email, password });
+                        if (error) alert(error.message); 
+                        else alert("Account created! You can now sign in.");
+                    }
+                });
+            }
+
+            checkUser();
+            updateCartCount();
+        });
+
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const main = document.getElementById('main-content');
+                main.innerHTML = `
+                    <h2 style="letter-spacing: 5px; margin-bottom: 20px;">ACCOUNT</h2>
+                    <p>Welcome, <strong>${user.email}</strong></p>
+                    <button class="btn-add" id="logout-btn" style="margin-top:30px; width:100%;">LOG OUT</button>
+                `;
+                document.getElementById('logout-btn').onclick = logout;
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            location.reload();
+        }
+
+        function updateCartCount() {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantite, 0);
+        }
+    </script>
+</body>
+</html>

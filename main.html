@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>MONDEYRO | Catalog</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<body>
+    <header>
+        <nav>
+            <div class="menu">
+                <a href="index.html">Main</a> <a href="main.html">Catalog</a>
+                <a href="login.html">Account</a>
+                <a href="contact.html">Contact</a> </div>
+            </div>
+            <h1 class="logo">MONDEYRO</h1>
+            <div class="cart"><a href="panier.html">Cart <span id="cart-count">0</span></a></div>
+        </nav>
+    </header>
+
+    <main>
+        <h2 class="section-title">CATALOG</h2>
+        <div id="product-grid" class="product-grid"></div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-info">
+                <p>Contact: mondeyroos@gmail.com</p>
+                <p>Instagram: @mondeyro.shop</p>
+                <p>© 2026 MONDEYRO</p>
+            </div>
+            <div class="logo" style="font-size: 18px;">MONDEYRO</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://yaspyppzhiegsjxgmzik.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlhc3B5cHB6aGllZ3NqeGdtemlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyMzc0MjcsImV4cCI6MjA4MzgxMzQyN30.p_owcqxOKPqTo9GVB7zgZhpd7ZXx9YW8AY797Edxgf8';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function updateCartCount() {
+            let cart = JSON.parse(localStorage.getItem('mondeyro_cart')) || [];
+            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantite, 0);
+        }
+
+        async function fetchProducts() {
+            const { data } = await supabaseClient.from('produits').select('*');
+            if (data) {
+                document.getElementById('product-grid').innerHTML = data.map(p => `
+                    <div class="product-card">
+                        <img src="${p.image_url}">
+                        <h3>${p.nom}</h3>
+                        <p>${p.prix}$</p>
+                        <a href="produit.html?id=${p.id}" class="btn-more">More</a>
+                    </div>
+                `).join('');
+            }
+            updateCartCount();
+        }
+        fetchProducts();
+    </script>
+</body>
+</html>
